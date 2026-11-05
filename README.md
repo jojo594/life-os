@@ -140,3 +140,7 @@ no login of its own.
 | `npm run snapshot` | `server/` | Saves a JSON backup |
 | `docker compose stop` | root | Stops the database and keeps your data |
 | `docker compose down -v` | root | **Deletes the database and all your data** |
+
+## License
+
+[MIT](LICENSE)
