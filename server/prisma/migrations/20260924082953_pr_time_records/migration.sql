@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "PR" ADD COLUMN     "time" TEXT,
+ALTER COLUMN "weight" DROP NOT NULL,
+ALTER COLUMN "reps" DROP NOT NULL;
+

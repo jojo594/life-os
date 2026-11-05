@@ -1,0 +1,24 @@
+-- AlterTable
+ALTER TABLE "Application" ALTER COLUMN "stack" SET DEFAULT ARRAY[]::TEXT[];
+
+-- AlterTable
+ALTER TABLE "Exam" ALTER COLUMN "topics" SET DEFAULT ARRAY[]::TEXT[];
+
+-- AlterTable
+ALTER TABLE "Goal" ALTER COLUMN "tags" SET DEFAULT ARRAY[]::TEXT[];
+
+-- AlterTable
+ALTER TABLE "Habit" ALTER COLUMN "log" SET DEFAULT ARRAY[]::TEXT[];
+
+-- AlterTable
+ALTER TABLE "Paper" ALTER COLUMN "tags" SET DEFAULT ARRAY[]::TEXT[];
+
+-- AlterTable
+ALTER TABLE "Skill" ALTER COLUMN "resources" SET DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "prereqs" SET DEFAULT ARRAY[]::TEXT[];
+
+-- AlterTable
+ALTER TABLE "Strategy" ALTER COLUMN "rules" SET DEFAULT ARRAY[]::TEXT[];
+
+-- AlterTable
+ALTER TABLE "Task" ALTER COLUMN "tags" SET DEFAULT ARRAY[]::TEXT[];

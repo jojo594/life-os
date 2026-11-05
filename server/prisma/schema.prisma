@@ -1,0 +1,397 @@
+// Life OS — Prisma schema.
+// Mirrors src/lib/types.ts on the frontend. Enum-like fields are String (so we
+// can evolve them without migrations), nested shapes are Json, primitive
+// arrays are String[]. createdAt/updatedAt on every model.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== PLANNING =====
+
+model Goal {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  module      String
+  horizon     String   // year | quarter | month | week
+  status      String   // backlog | planned | in_progress | blocked | done | archived
+  priority    String   // p0..p3
+  progress    Int      @default(0)
+  /// When true the UI shows tasks-done / tasks-total for this goal's module instead of the manual `progress` value.
+  autoProgress Boolean @default(false)
+  deadline    DateTime?
+  tags        String[] @default([])
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Task {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  module        String
+  status        String
+  priority      String
+  due           DateTime?
+  estimateMin   Int?
+  tags          String[] @default([])
+  linkedGoalId  String?
+  linkedProjectId String?
+  done          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Habit {
+  id            String   @id @default(cuid())
+  name          String
+  cue           String?
+  cadence       String   // daily | weekly
+  targetPerWeek Int?
+  module        String
+  log           String[] @default([]) // ISO dates
+  streak        Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ===== UNIVERSITY =====
+
+model Course {
+  id         String   @id @default(cuid())
+  code       String
+  name       String
+  credits    Int
+  instructor String?
+  grade      String?
+  progress   Int      @default(0)
+  examDate   DateTime?
+  notes      String?
+  color      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Assignment {
+  id        String   @id @default(cuid())
+  courseId  String
+  title     String
+  type      String   // homework | lab | project | report | presentation
+  due       DateTime
+  status    String
+  weight    Float?
+  grade     Float?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Exam {
+  id         String   @id @default(cuid())
+  courseId   String
+  date       DateTime
+  topics     String[] @default([])
+  confidence Int
+  studied    Float    @default(0)
+  target     Float
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ===== BUSINESS =====
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String
+  business    String
+  industry    String?
+  channel     String
+  stage       String
+  value       Float
+  contact     String?
+  serviceType String?  // website | automation | social_media | booking_system | branding | seo | ads | other
+  notes       String?
+  lastTouch   DateTime?
+  city        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Outreach {
+  id        String   @id @default(cuid())
+  leadId    String
+  date      DateTime
+  channel   String
+  message   String?
+  response  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BusinessIdea {
+  id              String   @id @default(cuid())
+  title           String
+  category        String
+  excitement      Int
+  feasibility     Int
+  monthlyPotential Float?
+  status          String
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Revenue {
+  id        String   @id @default(cuid())
+  source    String
+  amount    Float
+  date      DateTime
+  recurring Boolean  @default(false)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===== CAREER =====
+
+model Application {
+  id        String   @id @default(cuid())
+  company   String
+  role      String
+  type      String
+  location  String?
+  stack     String[] @default([])
+  stage     String
+  applied   DateTime?
+  link      String?
+  notes     String?
+  salary    Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===== SKILLS =====
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String
+  domain      String
+  level       Int      @default(0)
+  target      Int
+  confidence  Int
+  status      String
+  resources   String[] @default([])
+  projectIdea String?
+  deadline    DateTime?
+  notes       String?
+  prereqs     String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ===== FITNESS =====
+
+model Session {
+  id        String   @id @default(cuid())
+  date      DateTime
+  kind      String   // gym | run | swim | mobility | cross
+  duration  Int
+  load      Float?
+  rpe       Int?
+  notes     String?
+  exercises Json?    // [{name, sets, reps, weight}]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PR {
+  id         String   @id @default(cuid())
+  lift       String
+  // A record is either a lift (weight x reps) or a time ("28:00") — never both.
+  weight     Float?
+  reps       Int?
+  time       String?
+  date       DateTime
+  bodyweight Float?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model BodyMetric {
+  id        String   @id @default(cuid())
+  date      DateTime
+  weight    Float?   // optional so a mood/energy check-in can stand alone
+  sleep     Float?
+  mood      Int?
+  energy    Int?
+  focus     Int?     // daily operating signal (1–5)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===== LANGUAGES =====
+
+model Language {
+  id        String   @id @default(cuid())
+  name      String
+  level     String
+  target    String
+  priority  String
+  active    Boolean  @default(true)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LanguageSession {
+  id         String   @id @default(cuid())
+  languageId String
+  date       DateTime
+  minutes    Int
+  type       String
+  resource   String?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ===== FINANCE / TRADING =====
+
+model Trade {
+  id        String   @id @default(cuid())
+  symbol    String
+  side      String
+  entry     Float
+  exit      Float?
+  size      Float
+  date      DateTime
+  closed    DateTime?
+  pnl       Float?
+  strategy  String
+  regime    String?
+  rr        Float?
+  notes     String?
+  emotion   Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Strategy {
+  id          String   @id @default(cuid())
+  name        String
+  market      String
+  description String?
+  rules       String[] @default([])
+  winRate     Float?
+  expectancy  Float?
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ===== BRAND =====
+
+model ContentIdea {
+  id            String   @id @default(cuid())
+  title         String
+  pillar        String
+  platform      String
+  format        String
+  status        String
+  hook          String?
+  cta           String?
+  scheduledFor  DateTime?
+  performance   Json?    // {views, likes, saves}
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ===== READING =====
+
+model Book {
+  id         String   @id @default(cuid())
+  title      String
+  author     String
+  category   String
+  status     String
+  progress   Int      @default(0)
+  rating     Int?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  takeaways  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ===== JOURNAL =====
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  date      String   // YYYY-MM-DD
+  mood      Int?
+  energy    Int?
+  wins      String?
+  lessons   String?
+  tomorrow  String?
+  gratitude String?
+  free      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WeeklyReview {
+  id        String   @id @default(cuid())
+  weekStart String
+  wins      String
+  losses    String
+  lessons   String
+  nextWeek  String
+  scores    Json     // {study, business, fitness, brand, discipline}
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===== IDEAS / NOTEBOOK =====
+
+model Idea {
+  id         String   @id @default(cuid())
+  title      String
+  body       String?  // the idea itself
+  spark      String?  // what triggered it / source of inspiration
+  category   String   // life | business | creative | tech | learning | other
+  excitement Int      @default(3) // 1..5
+  status     String   // spark | exploring | building | shelved
+  starred    Boolean  @default(false)
+  tags       String[] @default([])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+
+// ===== CALENDAR =====
+
+model CalendarEvent {
+  id        String   @id @default(cuid())
+  title     String
+  date      DateTime // day of the event (start day when it spans days)
+  endDate   DateTime? // optional last day for multi-day events
+  time      String? // "HH:MM" — free text; empty means all-day
+  kind      String // milestone | deadline | meeting | travel | personal | reminder
+  module    String? // optional life area, matches the Module union
+  location  String?
+  notes     String?
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

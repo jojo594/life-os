@@ -1,0 +1,41 @@
+# Postgres for Life OS. The DB lives in Docker; backend + frontend run natively.
+# Bring up:    docker compose up -d
+# Logs:        docker compose logs -f db
+# Stop + keep data:  docker compose stop
+# Wipe data:   docker compose down -v
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: life-os-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lifeos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lifeos_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-lifeos}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - life-os-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lifeos} -d ${POSTGRES_DB:-lifeos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Optional: pgAdmin UI on http://localhost:5050 (login admin@life.os / admin)
+  # Comment in if you want a browser DB explorer.
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: life-os-pgadmin
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@life.os
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #     PGADMIN_CONFIG_SERVER_MODE: "False"
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - db
+
+volumes:
+  life-os-db-data:
